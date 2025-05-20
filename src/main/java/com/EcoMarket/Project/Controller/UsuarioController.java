@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.EcoMarket.Project.Model.Usuario;
 import com.EcoMarket.Project.Repository.UsuarioRepository;
 import com.EcoMarket.Project.Service.UsuarioService;
+
+import io.micrometer.core.ipc.http.HttpSender.Response;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,9 +39,19 @@ public class UsuarioController {
 
     @PostMapping
     public ResponseEntity<Usuario> crearUsuario(@RequestBody Usuario usuario){
-        Usuario nuevouUsuario = usuarioService.save(usuario);
-        return ResponseEntity.ok(nuevouUsuario);  
+        Usuario nuevoUsuario = usuarioService.save(usuario);
+        return ResponseEntity.ok(nuevoUsuario);  
     }
     
+    @DeleteMapping
+    public ResponseEntity<String> eliminar(@RequestParam Long id){
+        boolean eliminado = usuarioService.delete(id);
+        if (eliminado) {
+                return ResponseEntity.ok("Usuario eliminado correctamente");
+            
+        } else{
+            return ResponseEntity.status(404).body("Usuario no fue eliminado");
+        }
+    }
 
 }

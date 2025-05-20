@@ -29,7 +29,12 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
-    public void delete(Long id){
-        usuarioRepository.deleteById(id);
+    public boolean delete(Long id){
+        if (usuarioRepository.existsById(id)) {
+            usuarioRepository.deleteById(id);
+            return true;
+        } else{
+            return false;
+        }
     }
 }
