@@ -3,32 +3,28 @@ package com.EcoMarket.Project.Controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.EcoMarket.Project.Model.Usuario;
-import com.EcoMarket.Project.Repository.UsuarioRepository;
 import com.EcoMarket.Project.Service.UsuarioService;
-
-import io.micrometer.core.ipc.http.HttpSender.Response;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
-@RequestMapping("/api/Usuarios")
+@RequestMapping("/api/Usuarios")    
 public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
 
-    @GetMapping
+    @GetMapping("/{id}")
     public ResponseEntity<List<Usuario>> Listar(){
         List<Usuario> usuarios = usuarioService.findAll();
         if (usuarios.isEmpty()){
@@ -43,15 +39,16 @@ public class UsuarioController {
         return ResponseEntity.ok(nuevoUsuario);  
     }
     
-    @DeleteMapping
-    public ResponseEntity<String> eliminar(@RequestParam Long id){
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> eliminar(@PathVariable Long id){
         boolean eliminado = usuarioService.delete(id);
         if (eliminado) {
                 return ResponseEntity.ok("Usuario eliminado correctamente");
             
         } else{
-            return ResponseEntity.status(404).body("Usuario no fue eliminado");
+            return ResponseEntity.notFound().build();
         }
-    }
+    }   
+
 
 }
