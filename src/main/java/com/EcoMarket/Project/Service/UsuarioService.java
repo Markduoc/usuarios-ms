@@ -1,6 +1,7 @@
 package com.EcoMarket.Project.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,8 +22,8 @@ public class UsuarioService {
         return usuarioRepository.findAll();
     }
 
-    public Usuario findbyId(Long Id){
-        return usuarioRepository.findById(Id).get();
+    public Optional<Usuario> findById(Long id){
+        return usuarioRepository.findById(id);
     }
 
     public Usuario save(Usuario usuario){
@@ -36,5 +37,20 @@ public class UsuarioService {
         } else{
             return false;
         }
+    }
+
+    public boolean update(Long id, Usuario usuario){
+            Optional<Usuario> usuarioExistente = usuarioRepository.findById(id);
+            if (usuarioExistente.isPresent()){
+                Usuario u = usuarioExistente.get();
+                u.setRun(usuario.getRun());
+                u.setPrNombre(usuario.getPrNombre());
+                u.setSeNombre(usuario.getSeNombre());
+                u.setApPaterno(usuario.getApPaterno());
+                u.setApMaterno(usuario.getApMaterno());
+                usuarioRepository.save(u);
+                return true;
+            }
+            return false;
     }
 }

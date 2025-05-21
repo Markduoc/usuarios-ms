@@ -23,6 +23,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
+import java.util.Optional;
+
+
 
 
 
@@ -52,6 +56,15 @@ public class UsuarioController {
            "apPaterno": "Corrales",
            "apMaterno": "Ahumada"
           }
+
+          {
+           "id": 2,
+            "run": 219040635,
+            "prNombre": "Mateo",
+            "seNombre": "Andres",
+            "apPaterno": "Godoy",
+            "apMaterno": "Bobadilla"
+          }
         ]
       """)
     )
@@ -70,24 +83,10 @@ public class UsuarioController {
         summary = "Creacion de usuario",
         description = "Permite la creacion de un nuevo usuario dentro de la bd"
     )
-    @ApiResponse(
-    responseCode = "200",
-    description = "Crear usuario",
-    content = @Content(
-      mediaType = "application/json",
-      examples = @ExampleObject(value = """
-        [
-         {
-            "run": 219040636,
-           "prNombre": "Marco",
-           "seNombre": "Agustin",
-           "apPaterno": "Corrales",
-           "apMaterno": "Ahumada"
-          }
-        ]
-      """)
-    )
-  )
+    @ApiResponses( value = {
+        @ApiResponse(responseCode = "200", description = "Se crea el usuario"),
+        @ApiResponse(responseCode = "400", description = "Se ingresaron datos no validos")
+    })
     @PostMapping
     public ResponseEntity<Usuario> crearUsuario(@RequestBody Usuario usuario){
         Usuario nuevoUsuario = usuarioService.save(usuario);
@@ -99,9 +98,11 @@ public class UsuarioController {
         description = "Permite eliminar un usuario de la bd utilizando como parametro su id"
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200"),
-        @ApiResponse(responseCode = "400")
+        @ApiResponse(responseCode = "200", description = "Se ha eliminado el usuario"),
+        @ApiResponse(responseCode = "400", description = "Los datos ingresados fueron incorrectos"),
+        @ApiResponse(responseCode = "404", description = "El usuario que se solicito eliminar no fue encontrado")
     })
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> eliminar(@PathVariable Long id){
         boolean eliminado = usuarioService.delete(id);
@@ -111,5 +112,57 @@ public class UsuarioController {
         } else{
             return ResponseEntity.status(404).body("Usuario no fue eliminado");
         }
-    }   
+    }
+    
+    @Operation(
+        summary = "Actualizar datos de usuario",
+        description = "Permite actualizar los datos de un usuario en la bd a traves de su id y la solicitud de un cuerpo con los datos actualizados"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Se ha modificado el usuario"),
+        @ApiResponse(responseCode = "400", description = "Los datos ingresados fueron incorrectos"),
+        @ApiResponse(responseCode = "404", description = "El usuario que se solicito actualizar no fue encontrado")
+    })
+    
+    @PutMapping("/{id}")
+    public ResponseEntity<String> actualizar(@PathVariable Long id, @RequestBody Usuario usuario){
+        boolean actualizado = usuarioService.update(id, usuario);
+        if (actualizado){
+            return ResponseEntity.ok().body("Se ha actualizado el usuario");
+        }
+        return ResponseEntity.status(404).body("No se ha encontrado el usuario que se queria modificar");
+    }
+    @Operation(
+        summary = "Busqueda de usuario",
+        description = "Permite la busqueda de usuarios en base a su id"
+    )
+    
+    @ApiResponse(
+    responseCode = "200",
+    description = "Busqueda de usuario en base a su id",
+    content = @Content(
+      mediaType = "application/json",
+      examples = @ExampleObject(value = """
+        [
+         {
+            "id": 2,
+            "run": 219040636,
+           "prNombre": "Marco",
+           "seNombre": "Agustin",
+           "apPaterno": "Corrales",
+           "apMaterno": "Ahumada"
+          }
+        ]
+      """)
+    )
+  )
+    @GetMapping("/{id}")
+    public ResponseEntity<Usuario> buscarPorId(@PathVariable Long id){
+        Optional<Usuario> usuario = usuarioService.findById(id);
+        if (usuario.isPresent()) {
+            return ResponseEntity.ok(usuario.get());
+        } else{
+            return ResponseEntity.status(404).build();
+        }
+    }
 }
