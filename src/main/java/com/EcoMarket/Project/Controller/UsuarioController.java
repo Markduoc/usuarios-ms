@@ -98,9 +98,10 @@ public class UsuarioController {
         summary = "Eliminar usuario",
         description = "Permite eliminar un usuario de la bd utilizando como parametro su id"
     )
-    @ApiResponses(
-        @ApiResponse(responseCode = "200" )
-    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200"),
+        @ApiResponse(responseCode = "400")
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<String> eliminar(@PathVariable Long id){
         boolean eliminado = usuarioService.delete(id);
