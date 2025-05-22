@@ -31,7 +31,7 @@ import java.util.Optional;
 
 
 @RestController
-@RequestMapping("/api/Usuarios")
+@RequestMapping("/api/v1/usuarios")
 @Tag(name = "Usuario", description = "Gestion de usuarios")    
 public class UsuarioController {
     @Autowired
