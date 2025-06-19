@@ -3,10 +3,14 @@ package com.EcoMarket.Project.Controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.EcoMarket.Project.Assembler.UsuarioModelAssembler;
 import com.EcoMarket.Project.Model.Usuario;
 import com.EcoMarket.Project.Service.UsuarioService;
 
@@ -27,15 +31,18 @@ import org.springframework.web.bind.annotation.PutMapping;
 import java.util.Optional;
 
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 
-//VERSION SIN UTILIZAR
 @RestController
-@RequestMapping("/api/v1/usuarios")
+@RequestMapping("/api/v2/usuarios")
 @Tag(name = "Usuario", description = "Gestion de usuarios")    
-public class UsuarioController {
+public class UsuarioControllerV2 {
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired 
+    private UsuarioModelAssembler assembler;
 
     @Operation(
         summary = "Listar los usuarios registrados",
@@ -70,14 +77,13 @@ public class UsuarioController {
     )
   )
 
-    @GetMapping
-    public ResponseEntity<List<Usuario>> Listar(){
-        List<Usuario> usuarios = usuarioService.findAll();
-        if (usuarios.isEmpty()){
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(usuarios);
-    } 
+    @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    public CollectionModel<EntityModel<Usuario>> Listar(){
+        List<EntityModel<Usuario>> usuarios = usuarioService.findAll().stream();
+        .map(assembler::toModel)
+        .collect
+    }
+
 
     @Operation(
         summary = "Creacion de usuario",
