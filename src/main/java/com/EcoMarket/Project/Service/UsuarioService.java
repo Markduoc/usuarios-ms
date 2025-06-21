@@ -39,7 +39,7 @@ public class UsuarioService {
         }
     }
 
-    public boolean update(Long id, Usuario usuario){
+    public Optional<Usuario> update(Long id, Usuario usuario){
             Optional<Usuario> usuarioExistente = usuarioRepository.findById(id);
             if (usuarioExistente.isPresent()){
                 Usuario u = usuarioExistente.get();
@@ -49,8 +49,8 @@ public class UsuarioService {
                 u.setApPaterno(usuario.getApPaterno());
                 u.setApMaterno(usuario.getApMaterno());
                 usuarioRepository.save(u);
-                return true;
+                return Optional.of(u);
             }
-            return false;
+            return Optional.empty();
     }
 }

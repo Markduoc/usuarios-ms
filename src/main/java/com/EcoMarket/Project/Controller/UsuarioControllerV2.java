@@ -29,8 +29,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 import java.util.Optional;
-
-
+import java.util.stream.Collectors;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 
@@ -78,10 +77,18 @@ public class UsuarioControllerV2 {
   )
 
     @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
-    public CollectionModel<EntityModel<Usuario>> Listar(){
-        List<EntityModel<Usuario>> usuarios = usuarioService.findAll().stream();
+    public ResponseEntity<CollectionModel<EntityModel<Usuario>>> Listar(){
+        List<Usuario> usuarios = usuarioService.findAll();
+        if (usuarios.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        List<EntityModel<Usuario>> usuariosModel = usuarios.stream()
         .map(assembler::toModel)
-        .collect
+        .collect(Collectors.toList());
+        CollectionModel<EntityModel<Usuario>> collectionModel =
+        CollectionModel.of(usuariosModel,
+        linkTo(methodOn(UsuarioControllerV2.class).Listar()).withSelfRel());
+        return ResponseEntity.ok(collectionModel);
     }
 
 
@@ -93,10 +100,12 @@ public class UsuarioControllerV2 {
         @ApiResponse(responseCode = "200", description = "Se crea el usuario"),
         @ApiResponse(responseCode = "400", description = "Se ingresaron datos no validos")
     })
-    @PostMapping
-    public ResponseEntity<Usuario> crearUsuario(@RequestBody Usuario usuario){
+    @PostMapping(produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<EntityModel<Usuario>> crearUsuario(@RequestBody Usuario usuario){
         Usuario nuevoUsuario = usuarioService.save(usuario);
-        return ResponseEntity.ok(nuevoUsuario);  
+        return ResponseEntity
+        .created(linkTo(methodOn(UsuarioControllerV2.class).buscarPorId(nuevoUsuario.getId())).toUri())
+        .body(assembler.toModel(nuevoUsuario));  
     }
     
     @Operation(
@@ -109,14 +118,15 @@ public class UsuarioControllerV2 {
         @ApiResponse(responseCode = "404", description = "El usuario que se solicito eliminar no fue encontrado")
     })
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> eliminar(@PathVariable Long id){
+    @DeleteMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<?> eliminar(@PathVariable Long id){
         boolean eliminado = usuarioService.delete(id);
         if (eliminado) {
-                return ResponseEntity.ok("Usuario eliminado correctamente");
-            
+                return ResponseEntity
+                .ok("Usuario eliminado correctamente");
         } else{
-            return ResponseEntity.status(404).body("Usuario no fue eliminado");
+            return ResponseEntity
+            .status(404).body("Usuario no fue eliminado");
         }
     }
     
@@ -130,13 +140,19 @@ public class UsuarioControllerV2 {
         @ApiResponse(responseCode = "404", description = "El usuario que se solicito actualizar no fue encontrado")
     })
     
-    @PutMapping("/{id}")
-    public ResponseEntity<String> actualizar(@PathVariable Long id, @RequestBody Usuario usuario){
-        boolean actualizado = usuarioService.update(id, usuario);
-        if (actualizado){
-            return ResponseEntity.ok().body("Se ha actualizado el usuario");
+    @PutMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
+    public ResponseEntity<EntityModel<Usuario>> actualizar(@PathVariable Long id, @RequestBody Usuario usuario){
+        Optional<Usuario> actualizado = usuarioService.update(id, usuario);
+        if (actualizado.isPresent()){
+            Usuario Usuario2 = actualizado.get();
+            EntityModel<Usuario> resource = EntityModel.of(Usuario2,
+            linkTo(methodOn(UsuarioControllerV2.class).actualizar(id, usuario)).withSelfRel(),
+                linkTo(methodOn(UsuarioControllerV2.class).buscarPorId(id)).withRel("mensaje"),
+                linkTo(methodOn(UsuarioControllerV2.class).Listar()).withRel("mensajes"),
+                linkTo(methodOn(UsuarioControllerV2.class).eliminar(id)).withRel("eliminar"));
+            return ResponseEntity.ok(resource);
         }
-        return ResponseEntity.status(404).body("No se ha encontrado el usuario que se queria modificar");
+        return ResponseEntity.status(404).body(null);
     }
     @Operation(
         summary = "Busqueda de usuario",
@@ -162,7 +178,7 @@ public class UsuarioControllerV2 {
       """)
     )
   )
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
     public ResponseEntity<Usuario> buscarPorId(@PathVariable Long id){
         Optional<Usuario> usuario = usuarioService.findById(id);
         if (usuario.isPresent()) {
