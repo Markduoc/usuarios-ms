@@ -187,4 +187,11 @@ public class UsuarioControllerV2 {
             return ResponseEntity.status(404).build();
         }
     }
+    public void setUsuarioService(UsuarioService usuarioService) {
+    this.usuarioService = usuarioService;
+    }
+
+    public void setAssembler(UsuarioModelAssembler assembler) {
+        this.assembler = assembler;
+    }
 }
