@@ -147,8 +147,8 @@ public class UsuarioControllerV2 {
             Usuario Usuario2 = actualizado.get();
             EntityModel<Usuario> resource = EntityModel.of(Usuario2,
             linkTo(methodOn(UsuarioControllerV2.class).actualizar(id, usuario)).withSelfRel(),
-                linkTo(methodOn(UsuarioControllerV2.class).buscarPorId(id)).withRel("mensaje"),
-                linkTo(methodOn(UsuarioControllerV2.class).Listar()).withRel("mensajes"),
+                linkTo(methodOn(UsuarioControllerV2.class).buscarPorId(id)).withRel("usuario"),
+                linkTo(methodOn(UsuarioControllerV2.class).Listar()).withRel("usuarios"),
                 linkTo(methodOn(UsuarioControllerV2.class).eliminar(id)).withRel("eliminar"));
             return ResponseEntity.ok(resource);
         }
